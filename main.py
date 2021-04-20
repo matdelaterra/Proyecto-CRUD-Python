@@ -1,18 +1,26 @@
 import sys
+import csv
+import os
+CLIENT_TABLE = '.clients.csv'
+CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
+clients = []
 
-clients = [   
-        {
-            'name':'Pablo',
-            'company':'Google',
-            'email':'pablo@google.com',
-            'position':'Software engineer'
-         },
-        {
-            'name':'Ricardo',
-            'company':'Facebook',
-            'email': 'ricardo@facebook.com',
-            'position': 'Data engineer'
-          }]
+def _initialize_clients_from_storage():
+    with open(CLIENT_TABLE, mode='r') as f:
+        reader = csv.DictReader(f, fieldnames=CLIENT_SCHEMA)
+
+        for row in reader:
+            clients.append(row)
+
+def _save_clients_to_storage():
+    tmp_table_name = f'{CLIENT_TABLE}.tmp'
+    with open(tmp_table_name, mode='w') as f:
+        writer = csv.DictWriter(f, fieldnames=CLIENT_SCHEMA)
+        writer.writerows(clients)
+
+        os.remove(CLIENT_TABLE)
+        os.rename(tmp_table_name, CLIENT_TABLE)
+
 
 
 def create_client(client):
@@ -91,6 +99,7 @@ def _ask_client():
             }
     return client
 if __name__ == '__main__':
+    _initialize_clients_from_storage()
     _print_welcome()
     command = input('')
     command = command.upper()
@@ -98,7 +107,7 @@ if __name__ == '__main__':
     if command == 'C':
         client = _ask_client()
         create_client(client)
-        list_clients()
+
 
     elif command == 'L':
         list_clients()
@@ -106,12 +115,12 @@ if __name__ == '__main__':
     elif command == 'D':
         client = _ask_client()
         delete_client(client)
-        list_clients()
+    
 
     elif command == 'U':
         client = _ask_client()
         update_client(client)
-        list_clients()
+
 
     elif command == 'S':
         client = _ask_client()
@@ -122,4 +131,5 @@ if __name__ == '__main__':
             print(f'The client: {client_name} is not in the client\'s list')
     else:
         print('El comando es inválido')
-
+    
+    _save_clients_to_storage()
